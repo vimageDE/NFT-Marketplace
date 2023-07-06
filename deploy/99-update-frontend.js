@@ -4,14 +4,14 @@ const fs = require('fs');
 const NFT_ADDRESS_FILE = '../NFT-Marketplace_frontend/constants/contractAddresses.json';
 const NFT_ABI_FILE = '../NFT-Marketplace_frontend/constants/abi.json';
 
-module.exports = async ({ deployments }) => {
-  const { log } = deployments;
+module.exports = async ({}) => {
+  // const { log } = deployments;
 
   if (process.env.UPDATE_FRONT_END) {
-    log('Updating front end...');
+    console.log('Updating front end...');
     await updateNftAddress();
     await updateNftAbi();
-    log('Finished updating front end');
+    console.log('Finished updating front end');
   }
 };
 
@@ -21,11 +21,13 @@ async function updateNftAddress() {
   const currentAddresses = JSON.parse(fs.readFileSync(NFT_ADDRESS_FILE, 'utf8'));
   if (chainId in currentAddresses) {
     if (!currentAddresses[chainId].includes(contract.address)) {
-      currentAddresses[chainId].push(raffle.address);
+      currentAddresses[chainId].push(contract.address);
     }
   } else {
-    currentAddresses[chainId] = [raffle.address];
+    console.log(`contract address: ${contract.address}`);
+    currentAddresses[chainId] = [contract.address];
   }
+  fs.writeFileSync(NFT_ADDRESS_FILE, JSON.stringify(currentAddresses));
 }
 
 async function updateNftAbi() {

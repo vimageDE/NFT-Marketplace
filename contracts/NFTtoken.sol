@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-contract ArtworkToken is ERC721 {
+contract NFTtoken is ERC721 {
     address immutable i_owner;
 
     uint256 public s_tokenCounter;
