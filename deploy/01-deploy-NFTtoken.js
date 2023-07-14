@@ -23,9 +23,17 @@ module.exports = async function ({ deployments }) {
     waitConfirmations: waitBlockConfirmations,
   });
 
+  const Market = await deploy('Market', {
+    from: deployer.address,
+    args: [NFTtoken.address],
+    log: true,
+    waitConfirmations: waitBlockConfirmations,
+  });
+
   if (!localChain && process.env.ETHERSCAN_TOKEN) {
     log('Verifying...');
     await verify(NFTtoken.address, args);
+    await verify(Market.address, [NFT.address]);
   }
   log('------------------------------');
 };

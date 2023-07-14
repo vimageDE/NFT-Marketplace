@@ -1,14 +1,7 @@
 // Hardhat deploy
-import '@nomicfoundation/hardhat-ethers';
 import 'hardhat-deploy';
-import 'hardhat-deploy-ethers';
-// Hardhat
-import '@nomicfoundation/hardhat-chai-matchers';
-import '@nomicfoundation/hardhat-ethers';
-import '@typechain/hardhat';
 // Toolbox
-import 'hardhat-gas-reporter';
-import 'solidity-coverage';
+import '@nomicfoundation/hardhat-toolbox';
 import '@openzeppelin/hardhat-upgrades';
 import '@primitivefi/hardhat-marmite';
 // others
