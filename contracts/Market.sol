@@ -24,7 +24,7 @@ contract Market {
     ) public view returns (bool) {
         require(i_nft.ownerOf(tokenId) == msg.sender, "Not owner");
 
-        address signerOfSignature = getSigner(tokenId, sigOwner, price, typeOf, nonce, signature);
+        address signerOfSignature = getSigner(tokenId, nonce, price, typeOf, signature);
         require(signerOfSignature == sigOwner, "Wrong Signature");
 
         // Do the purchase!
@@ -36,23 +36,17 @@ contract Market {
     // View Functions
     function getSigner(
         uint256 tokenId,
-        address sigOwner,
+        uint256 nonce,
         uint256 price,
         string memory typeOf,
-        uint256 nonce,
         bytes memory signature
     ) public view returns (address) {
-        // EIP 721 domain type /*
-        /*string memory name = "NFT Portfolio";
-        string memory version = "1";
-        uint256 chainId = block.chainid;
-        address verifyingContract = address(this); */
+        address user = msg.sender;
 
         // stringified types
         string
             memory EIP712_DOMAIN_TYPE = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
-        string memory MESSAGE_TYPE = "Message(uint256 tokenId,uint256 nonce,string typeOf)";
-        // memory MESSAGE_TYPE = "Message(uint256 tokenId, address sigOwner, uint256 price, string typeOf, uint256 nonce)";
+        string memory MESSAGE_TYPE = "Message(uint256 tokenId,uint256 nonce,uint256 price,string typeOf,address user)";
 
         // hash to prevent signature collision
         bytes32 DOMAIN_SEPARATOR = keccak256(
@@ -66,21 +60,20 @@ contract Market {
         );
 
         // hash typed data
-        // IMPORTANT!! the same data types MUST be packed together! it will not work to mix uint256, then string, then uint256!
+        // IMPORTANT!! abi.encode with MULTIPLE values/types. But with a SINGLE string, you MUST use abi.encodePacked
+        // this is relevant for the abi.encode that comes AFTER the DOMAIN_SEPARATOR!
         bytes32 hash = keccak256(
             abi.encodePacked(
                 "\x19\x01", // backslash is needed to escape the character
                 DOMAIN_SEPARATOR,
                 keccak256(
-                    abi.encodePacked(
+                    abi.encode(
                         keccak256(abi.encodePacked(MESSAGE_TYPE)),
                         tokenId,
                         nonce,
-                        // price,
-                        // sigOwner,
-                        //
-                        keccak256(abi.encodePacked(typeOf))
-                        // nonce
+                        price,
+                        keccak256(abi.encodePacked(typeOf)),
+                        user
                     )
                 )
             )
