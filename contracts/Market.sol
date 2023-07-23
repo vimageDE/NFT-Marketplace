@@ -8,7 +8,7 @@ contract Market {
     uint256 private constant MIN_PRICE = 1000000000000000;
 
     IERC721 private immutable i_nft;
-    mapping(address => uint256) s_addressToNonce;
+    mapping(uint256 => bool) s_nonceIsUsed;
 
     constructor(address nftAddress) {
         i_nft = IERC721(nftAddress);
@@ -26,6 +26,7 @@ contract Market {
 
         address signerOfSignature = getSigner(tokenId, nonce, price, typeOf, signature);
         require(signerOfSignature == sigOwner, "Wrong Signature");
+        require(s_nonceIsUsed[nonce] == false, "Nonce used");
 
         // Do the purchase!
         return true;
@@ -104,9 +105,5 @@ contract Market {
             // verify
             return ecrecover(hash, v, r, s);
         }
-    }
-
-    function getNonce() public view returns (uint256) {
-        return s_addressToNonce[msg.sender];
     }
 }
