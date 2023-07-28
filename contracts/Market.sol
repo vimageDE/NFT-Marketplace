@@ -50,7 +50,7 @@ contract Market {
         string
             memory EIP712_DOMAIN_TYPE = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
         string
-            memory MESSAGE_TYPE = "Message(uint256 tokenId,uint256 nonce,uint256 price,string typeOf,uint256 timestamp, address user)";
+            memory MESSAGE_TYPE = "Message(uint256 tokenId,uint256 nonce,uint256 price,uint256 timestamp,string typeOf,address user)";
 
         // hash to prevent signature collision
         bytes32 DOMAIN_SEPARATOR = keccak256(
@@ -76,8 +76,8 @@ contract Market {
                         tokenId,
                         nonce,
                         price,
-                        keccak256(abi.encodePacked(typeOf)),
                         timestamp,
+                        keccak256(abi.encodePacked(typeOf)),
                         user
                     )
                 )
