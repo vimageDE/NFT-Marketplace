@@ -23,7 +23,7 @@ module.exports = async ({ deployments }) => {
       const fileBuffer = fs.readFileSync(filePath);
       const file = new File([fileBuffer], 'image.jpg', { type: 'image/jpg' }); // change the type based on your file
       const metadata = await client.store({
-        name: filePath,
+        name: 'Money',
         description: 'NFT Image',
         image: file,
       });

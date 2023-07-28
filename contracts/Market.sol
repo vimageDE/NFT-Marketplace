@@ -20,11 +20,12 @@ contract Market {
         uint256 price,
         string memory typeOf,
         uint256 nonce,
+        uint256 timestamp,
         bytes memory signature
     ) public view returns (bool) {
         require(i_nft.ownerOf(tokenId) == msg.sender, "Not owner");
 
-        address signerOfSignature = getSigner(tokenId, nonce, price, typeOf, signature);
+        address signerOfSignature = getSigner(tokenId, nonce, price, typeOf, timestamp, signature);
         require(signerOfSignature == sigOwner, "Wrong Signature");
         require(s_nonceIsUsed[nonce] == false, "Nonce used");
 
@@ -40,6 +41,7 @@ contract Market {
         uint256 nonce,
         uint256 price,
         string memory typeOf,
+        uint256 timestamp,
         bytes memory signature
     ) public view returns (address) {
         address user = msg.sender;
@@ -47,7 +49,8 @@ contract Market {
         // stringified types
         string
             memory EIP712_DOMAIN_TYPE = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
-        string memory MESSAGE_TYPE = "Message(uint256 tokenId,uint256 nonce,uint256 price,string typeOf,address user)";
+        string
+            memory MESSAGE_TYPE = "Message(uint256 tokenId,uint256 nonce,uint256 price,string typeOf,uint256 timestamp, address user)";
 
         // hash to prevent signature collision
         bytes32 DOMAIN_SEPARATOR = keccak256(
@@ -74,6 +77,7 @@ contract Market {
                         nonce,
                         price,
                         keccak256(abi.encodePacked(typeOf)),
+                        timestamp,
                         user
                     )
                 )

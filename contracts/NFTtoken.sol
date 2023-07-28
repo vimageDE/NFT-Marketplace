@@ -93,6 +93,14 @@ contract NFTtoken is ERC721 {
         return s_tokenIdToURI[tokenId];
     }
 
+    function getOwner(uint256 tokenId) public view returns (address) {
+        return _ownerOf(tokenId);
+    }
+
+    function getCreator(uint256 tokenId) public view returns (address) {
+        return s_tokenIdToCreator[tokenId];
+    }
+
     function getArtworksOfOwner(address owner) public view returns (uint256[] memory) {
         return s_ownerToTokenIds[owner];
     }
