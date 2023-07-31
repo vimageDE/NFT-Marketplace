@@ -3,15 +3,18 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Market {
     uint256 private constant MIN_PRICE = 1000000000000000;
 
     IERC721 private immutable i_nft;
+    IERC20 private immutable i_weth;
     mapping(uint256 => bool) s_nonceIsUsed;
 
-    constructor(address nftAddress) {
+    constructor(address nftAddress, address wethAddress) {
         i_nft = IERC721(nftAddress);
+        i_weth = IERC20(wethAddress);
     }
 
     function PurchaseNft(

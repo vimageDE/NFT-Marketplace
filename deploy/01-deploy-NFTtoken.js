@@ -6,8 +6,13 @@ module.exports = async function ({ deployments }) {
   const [deployer] = await ethers.getSigners();
   const localChain = network.config.local;
 
+  let wethAddress;
+
   if (localChain) {
     // Handle Local Mocks and Addresses
+    const weth = await deployments.get('WethMock');
+    wethAddress = weth.address;
+    log(`WETH contract address: ${wethAddress}`);
   } else {
     // Handle Live Addresses
   }
@@ -25,7 +30,7 @@ module.exports = async function ({ deployments }) {
 
   const Market = await deploy('Market', {
     from: deployer.address,
-    args: [NFTtoken.address],
+    args: [NFTtoken.address, wethAddress],
     log: true,
     waitConfirmations: waitBlockConfirmations,
   });
