@@ -18,62 +18,69 @@ contract Market {
     IERC20 private immutable i_weth;
     mapping(uint256 => bool) s_nonceIsUsed;
 
+    struct Message {
+        uint256 tokenId;
+        address user;
+        uint256 nonce;
+        uint256 price;
+        string typeOf;
+        uint256 timestamp;
+    }
+
     constructor(address nftAddress, address wethAddress) {
         i_nft = IERC721(nftAddress);
         i_weth = IERC20(wethAddress);
     }
 
-    function PurchaseNft(
-        uint256 tokenId,
-        address sigOwner,
-        uint256 price,
-        string memory typeOf,
-        uint256 nonce,
-        uint256 timestamp,
-        bytes memory signature
-    ) public view returns (bool) {
-        require(i_nft.ownerOf(tokenId) == msg.sender, "Not owner");
+    function BuyNft(Message memory message, bytes memory signature) external returns (bool) {
+        message.typeOf = "sale";
 
-        address signerOfSignature = getSigner(tokenId, sigOwner, nonce, price, typeOf, timestamp, signature);
-        require(signerOfSignature == sigOwner, "Wrong Signature");
-        require(s_nonceIsUsed[nonce] == false, "Nonce used");
+        address tokenOwner = i_nft.ownerOf(message.tokenId);
+        if (tokenOwner != message.user) revert Market_NotOwner();
+        if (message.timestamp < block.timestamp) revert Market_Expired();
+        if (tokenOwner == msg.sender) revert Market_IsAlreadOwner();
+        if (s_nonceIsUsed[message.nonce] == true) revert Market_NonceUsed();
+        address ownerOfSignature = getSigner(message, signature);
+        if (ownerOfSignature != tokenOwner) revert Market_WrongSignature();
 
-        // Do the purchase!
-        return true;
+        // Send Money
+        i_weth.transferFrom(msg.sender, tokenOwner, message.price);
+        // Transfer NFT
+        i_nft.safeTransferFrom(tokenOwner, msg.sender, message.tokenId);
+
+        s_nonceIsUsed[message.nonce] = true;
     }
 
     function SellNft(
-        uint256 tokenId,
+        /*uint256 tokenId,
         address offerOwner,
         uint256 price,
         uint256 nonce,
-        uint256 timestamp,
+        uint256 timestamp, */
+        Message memory message,
         bytes memory signature
-    ) public {
-        address tokenOwner = i_nft.ownerOf(tokenId);
+    ) external {
+        // Set Message type as "offer"
+        message.typeOf = "offer";
+
+        address tokenOwner = i_nft.ownerOf(message.tokenId);
         if (tokenOwner != msg.sender) revert Market_NotOwner();
-        if (timestamp < block.timestamp) revert Market_Expired();
-        if (offerOwner == msg.sender) revert Market_IsAlreadOwner();
-        if (s_nonceIsUsed[nonce] == true) revert Market_NonceUsed();
-        address ownerOfSignature = getSigner(tokenId, offerOwner, nonce, price, "offer", timestamp, signature);
-        if (ownerOfSignature != offerOwner) revert Market_WrongSignature();
+        if (message.timestamp < block.timestamp) revert Market_Expired();
+        if (message.user == msg.sender) revert Market_IsAlreadOwner();
+        if (s_nonceIsUsed[message.nonce] == true) revert Market_NonceUsed();
+        address ownerOfSignature = getSigner(message, signature);
+        if (ownerOfSignature != message.user) revert Market_WrongSignature();
 
         // Get Money
-        i_weth.transferFrom(offerOwner, tokenOwner, price);
+        i_weth.transferFrom(message.user, tokenOwner, message.price);
         // Sell NFT
-        i_nft.safeTransferFrom(tokenOwner, offerOwner, tokenId);
+        i_nft.safeTransferFrom(tokenOwner, message.user, message.tokenId);
+
+        s_nonceIsUsed[message.nonce] = true;
     }
 
     // View Functions
-    function getSigner(
-        uint256 tokenId,
-        address user,
-        uint256 nonce,
-        uint256 price,
-        string memory typeOf,
-        uint256 timestamp,
-        bytes memory signature
-    ) public view returns (address) {
+    function getSigner(Message memory message, bytes memory signature) public view returns (address) {
         // address user = msg.sender;
 
         // stringified types
@@ -103,12 +110,12 @@ contract Market {
                 keccak256(
                     abi.encode(
                         keccak256(abi.encodePacked(MESSAGE_TYPE)),
-                        tokenId,
-                        nonce,
-                        price,
-                        timestamp,
-                        keccak256(abi.encodePacked(typeOf)),
-                        user
+                        message.tokenId,
+                        message.nonce,
+                        message.price,
+                        message.timestamp,
+                        keccak256(abi.encodePacked(message.typeOf)),
+                        message.user
                     )
                 )
             )
