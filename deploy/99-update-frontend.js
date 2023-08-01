@@ -32,13 +32,7 @@ async function updateNftAddress() {
   const contract = await deployments.get('NFTtoken');
   const chainId = network.config.chainId.toString();
   const currentAddresses = JSON.parse(fs.readFileSync(NFT_ADDRESS_FILE, 'utf8'));
-  if (chainId in currentAddresses) {
-    if (!currentAddresses[chainId].includes(contract.address)) {
-      currentAddresses[chainId].push(contract.address);
-    }
-  } else {
-    currentAddresses[chainId] = [contract.address];
-  }
+  currentAddresses[chainId] = [contract.address];
 
   fs.writeFileSync(NFT_ADDRESS_FILE, JSON.stringify(currentAddresses));
 }
@@ -47,13 +41,7 @@ async function updateMarketAddress() {
   const contract = await deployments.get('Market');
   const chainId = network.config.chainId.toString();
   const currentAddresses = JSON.parse(fs.readFileSync(MARKET_ADDRESS_FILE, 'utf8'));
-  if (chainId in currentAddresses) {
-    if (!currentAddresses[chainId].includes(contract.address)) {
-      currentAddresses[chainId].push(contract.address);
-    }
-  } else {
-    currentAddresses[chainId] = [contract.address];
-  }
+  currentAddresses[chainId] = [contract.address];
 
   fs.writeFileSync(MARKET_ADDRESS_FILE, JSON.stringify(currentAddresses));
 }
@@ -78,7 +66,7 @@ async function updateMarketAbi() {
 }
 
 async function updateWethAbi() {
-  const contract = await deployments.get('Market');
+  const contract = await deployments.get('WethMock');
   const chainId = network.config.chainId.toString();
   const currentAbi = JSON.parse(fs.readFileSync(WETH_ABI_FILE, 'utf8'));
   currentAbi[chainId] = [contract.abi];

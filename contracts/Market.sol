@@ -5,6 +5,12 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+error Market_WrongSignature();
+error Market_NonceUsed();
+error Market_Expired();
+error Market_NotOwner();
+error Market_IsAlreadOwner();
+
 contract Market {
     uint256 private constant MIN_PRICE = 1000000000000000;
 
@@ -28,7 +34,7 @@ contract Market {
     ) public view returns (bool) {
         require(i_nft.ownerOf(tokenId) == msg.sender, "Not owner");
 
-        address signerOfSignature = getSigner(tokenId, nonce, price, typeOf, timestamp, signature);
+        address signerOfSignature = getSigner(tokenId, sigOwner, nonce, price, typeOf, timestamp, signature);
         require(signerOfSignature == sigOwner, "Wrong Signature");
         require(s_nonceIsUsed[nonce] == false, "Nonce used");
 
@@ -36,18 +42,39 @@ contract Market {
         return true;
     }
 
-    function SellNft(uint256 tokenId, uint256 price) public {}
+    function SellNft(
+        uint256 tokenId,
+        address offerOwner,
+        uint256 price,
+        uint256 nonce,
+        uint256 timestamp,
+        bytes memory signature
+    ) public {
+        address tokenOwner = i_nft.ownerOf(tokenId);
+        if (tokenOwner != msg.sender) revert Market_NotOwner();
+        if (timestamp < block.timestamp) revert Market_Expired();
+        if (offerOwner == msg.sender) revert Market_IsAlreadOwner();
+        if (s_nonceIsUsed[nonce] == true) revert Market_NonceUsed();
+        address ownerOfSignature = getSigner(tokenId, offerOwner, nonce, price, "offer", timestamp, signature);
+        if (ownerOfSignature != offerOwner) revert Market_WrongSignature();
+
+        // Get Money
+        i_weth.transferFrom(offerOwner, tokenOwner, price);
+        // Sell NFT
+        i_nft.safeTransferFrom(tokenOwner, offerOwner, tokenId);
+    }
 
     // View Functions
     function getSigner(
         uint256 tokenId,
+        address user,
         uint256 nonce,
         uint256 price,
         string memory typeOf,
         uint256 timestamp,
         bytes memory signature
     ) public view returns (address) {
-        address user = msg.sender;
+        // address user = msg.sender;
 
         // stringified types
         string
