@@ -43,7 +43,7 @@
     "hardhat-gas-reporter": "^1.0.9",
     "husky": "^8.0.2",
     "nft.storage": "^7.1.0",
-    "prettier": "^2.8.8",
+    "prettier": "^3.0.1",
     "prettier-plugin-solidity": "^1.1.3",
     "solhint": "^3.4.1",
     "ts-node": "^10.9.1",
