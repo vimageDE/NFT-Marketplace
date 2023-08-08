@@ -18,6 +18,8 @@ contract Market {
     IERC20 private immutable i_weth;
     mapping(uint256 => bool) s_nonceIsUsed;
 
+    event Transfer(address indexed from, address indexed to, uint256 tokenId);
+
     struct Message {
         uint256 tokenId;
         address user;
@@ -32,7 +34,7 @@ contract Market {
         i_weth = IERC20(wethAddress);
     }
 
-    function BuyNft(Message memory message, bytes memory signature) external returns (bool) {
+    function BuyNft(Message memory message, bytes memory signature) external {
         message.typeOf = "sale";
 
         address tokenOwner = i_nft.ownerOf(message.tokenId);
